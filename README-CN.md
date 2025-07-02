@@ -1,6 +1,8 @@
 # Code Completion Server
 
 
+中文 | [English](README.md)
+
 ## 📌 项目简介
 
 诸葛神码的代码补全后端
@@ -32,6 +34,7 @@ OPENAI_MODEL=qwen2.5-coder-3b-instruct
 ```shell
 cd copilot_proxy
 pip install -r requirements.txt
+cp lsp/* copilot_proxy/ast_tools/cmd
 python app.py
 ```
 

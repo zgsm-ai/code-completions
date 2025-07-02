@@ -1,5 +1,8 @@
 # Code Completion Server
 
+
+English | [中文](README-CN.md)
+
 ## 📌 Project Introduction
 
 Shenma's code completion backend
@@ -28,6 +31,7 @@ OPENAI_MODEL=qwen2.5-coder-3b-instruct
 ```shell
 cd copilot_proxy
 pip install -r requirements.txt
+cp lsp/* copilot_proxy/ast_tools/cmd
 python app.py
 ```
 
