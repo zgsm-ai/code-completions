@@ -1,0 +1,104 @@
+python:
+  - if
+  - else
+  - elif
+  - for
+  - while
+  - try
+  - except
+  - finally
+  - def
+  - class
+  - with
+  - async
+  - match
+
+go:
+  - func
+  - if
+  - else
+  - for
+  - switch
+  - case
+  - type
+  - select
+  - defer
+  - go
+
+c:
+  - typedef
+  - if
+  - for
+  - do
+  - while
+  - switch
+  - case
+  - void
+
+cpp:
+  - if
+  - else
+  - while
+  - do
+  - for
+  - switch
+  - case
+  - default
+  - try
+  - catch
+  - struct
+  - enum
+  - class
+  - union
+  - public
+  - typedef
+
+javascript:
+  - if
+  - else
+  - for
+  - while
+  - do
+  - switch
+  - try
+  - catch
+  - finally
+  - function
+  - class
+  - with
+
+typescript:
+  - function
+  - class
+  - if
+  - for
+  - try
+  - interface
+  - private
+  - switch
+  - case
+  - public
+  - async
+  - constructor
+
+vue:
+  - "methods:"
+  - try
+  - if
+  - switch
+  - case
+  - for
+  - "<ix-"
+  - "<sf-"
+  - "<lx-"
+  - "<el-"
+
+other:
+  - if
+  - else
+  - for
+  - while
+  - do
+  - try
+  - catch
+  - finally

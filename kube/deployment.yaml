@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: code-completion-server
+  namespace: "shenma" # 命名空间
+spec:
+  replicas: 1 # 设置数量
+  selector:
+    matchLabels:
+      app: code-completion
+  template:
+    metadata:
+      labels:
+        app: code-completion
+    spec:
+      containers:
+      - name: code-completion-container
+        image: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 8Gi
+          requests:
+            cpu: "2"
+            memory: 4Gi
+        ports:
+        - containerPort: 5000
+        env:
+          - name: THRESHOLD_SCORE
+            value: "0.3"
+          - name: MAIN_MODEL_TYPE
+            value: "openai"
+          - name: MAX_MODEL_LEN
+            value: "5000,1000"  # 注意：类型为字符串
+          - name: OPENAI_MODEL_HOST
+            value: ""  # 补全接口
+          - name: OPENAI_MODEL
+            value: "DeepSeek-Coder-V2-Lite-Base"  # 模型名称
+          - name: OPENAI_MODEL_AUTHORIZATION
+            value: ""  # 模型认证key可选
+          - name: CODEBASE_INDEXER_API_BASE_URL
+            value: "http://codebase-indexer-svc.shenma.svc.cluster.local:8888"  # 上下文请求地址
+          - name: CONTEXT_COST_TIME # 上下文最长请求时间 ms
+            value: "1500"
+          - name: MAX_TOKENS
+            value: "500"
+          - name: MAX_MODEL_COST_TIME
+            value: "2800"
+          - name: MAX_COST_TIME
+            value: "3000"
+          - name: MULTI_LINE_STREAM_K
+            value: "8"
+          - name: MIN_PREFIX_TOKEN
+            value: "2000"
+            # redis配置
+          - name: ENABLE_REDIS
+            value: "False"
+          - name: REDIS_HOST
+            value: ""
+          - name: REDIS_PORT
+            value: ""
+          - name: REDIS_DB
+            value: ""
+          - name: REDIS_PWD
+            value: ""
+          - name: COMPLETION_CACHE_TIME
+            value: "86400"
+          - name: CONTINUE_COMPLETION_CACHE_EXPIRED
+            value: "30"
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-completion-svc
+  namespace: "shenma" # 命名空间
+spec:
+  type: ClusterIP
+  selector:
+    app: code-completion
+  ports:
+    - protocol: TCP
+      port: 5000         # 集群内访问使用的端口
+      targetPort: 5000 # 转发到 Pod 的容器端口

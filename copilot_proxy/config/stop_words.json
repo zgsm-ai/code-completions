@@ -1,0 +1,49 @@
+{
+  "vue": [
+
+  ],
+  "typescript": [
+
+  ],
+  "javascript": [
+
+  ],
+  "python": [
+    "@classmethod",
+    "@staticmethod",
+    "@property",
+    "@abstractmethod",
+    "@asyncio.coroutine",
+    "@asyncio.coroutine_decorator"
+  ],
+  "go": [
+
+  ],
+  "cpp": [
+
+  ],
+  "c": [
+
+  ],
+  "shell": [
+
+  ],
+  "lua": [
+
+  ],
+  "java": [
+    "@Override",
+    "@Deprecated",
+    "@SuppressWarnings",
+    "@FunctionalInterface",
+    "@SafeVarargs",
+    "@Retention",
+    "@Target"
+  ],
+  "php": [
+
+  ],
+  "ruby": [
+
+  ]
+}

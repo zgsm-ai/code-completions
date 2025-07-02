@@ -1,0 +1,111 @@
+{
+  "vue": [
+    "<script>",
+    "<style>",
+    "<template>"
+  ],
+  "typescript": [
+    "(.*)function",
+    "class",
+    "interface",
+    "namespace",
+    "module"
+  ],
+  "javascript": [
+    "function",
+    "class",
+    "if",
+    "for",
+    "while",
+    "do",
+    "switch"
+  ],
+  "python": [
+    "def",
+    "class",
+    "if",
+    "for",
+    "while",
+    "try",
+    "with",
+    "@classmethod",
+    "@staticmethod",
+    "@property",
+    "@abstractmethod",
+    "@asyncio.coroutine",
+    "@asyncio.coroutine_decorator"
+  ],
+  "go": [
+    "func",
+    "if",
+    "for",
+    "switch"
+  ],
+  "cpp": [
+    "class",
+    "struct",
+    "namespace",
+    "if",
+    "for",
+    "while",
+    "do",
+    "switch"
+  ],
+  "c": [
+    "if",
+    "for",
+    "while",
+    "do",
+    "switch"
+  ],
+  "shell": [
+    "if",
+    "for",
+    "while",
+    "case"
+  ],
+  "lua": [
+    "function",
+    "if",
+    "for",
+    "while",
+    "repeat",
+    "until",
+    "do"
+  ],
+  "java": [
+    "class",
+    "interface",
+    "enum",
+    "if",
+    "for",
+    "while",
+    "do",
+    "switch",
+    "@Override",
+    "@Deprecated",
+    "@SuppressWarnings",
+    "@FunctionalInterface",
+    "@SafeVarargs",
+    "@Retention",
+    "@Target"
+  ],
+  "php": [
+    "function",
+    "class",
+    "if",
+    "for",
+    "while",
+    "do",
+    "switch"
+  ],
+  "ruby": [
+    "def",
+    "class",
+    "if",
+    "for",
+    "while",
+    "do",
+    "case"
+  ]
+}

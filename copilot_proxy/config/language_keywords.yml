@@ -1,0 +1,51 @@
+python:
+  keywords: ["class", "def", "if", "else", "else:", "elif", "for", "try", "try:", "except", "while"]
+  regular: (['\"]{3}).*?\1
+
+javascript:
+  keywords: ["function", "class", "if", "for", "try", "switch", "case"]
+  regular: /\*.*?\*/
+
+go:
+  keywords: ["type", "func", "for", "if", "defer", "switch", "case"]
+  regular: /\*.*?\*/
+
+typescript:
+  keywords: ["function", "class", "if", "for", "try", "interface", "private", "switch", "case"]
+  regular: /\*.*?\*/
+
+vue:
+  keywords: ["methods:", "try", "if", "switch", "case", "for", "<ix-", "<sf-", "<lx-", "<el-", ".*"]
+  regular:
+
+c:
+  keywords: ["typedef", "if", "for", "do", "while", "switch", "case", "void"]
+  regular:
+
+cpp:
+  keywords: ["try", "typedef", "class", "public", "struct", "if", "for", "do", "while", "switch", "case", "void"]
+  regular:
+
+shell:
+  keywords: ["function", "if", "else", "elif", "case", "while", "for", "do", "then"]
+  regular:
+
+java:
+  keywords: ["private", "public", "protected", "try", "if", "static", "switch", "case"]
+  regular:
+
+lua:
+  keywords: ["for", "if", "else", "elseif", "while", "function"]
+  regular:
+
+php:
+  keywords: ["function", "try", "if", "while", "for", "interface", "class", "public", "private"]
+  regular:
+
+ruby:
+  keywords: ["def", "if", "while", "for", "rescue", "class", "elsif", "else", "unless", "case", "when"]
+  regular:
+
+batch:
+  keywords: ["if", "for"]
+  regular:
