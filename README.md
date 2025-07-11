@@ -5,7 +5,7 @@ English | [中文](README-CN.md)
 
 ## 📌 Project Introduction
 
-Shenma's code completion backend
+Costrict's code completion backend
 
 ## 🧰 Runtime Environment
 
