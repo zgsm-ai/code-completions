@@ -1,62 +1,44 @@
-import logging.config
-import sys
+import structlog
+from collections import OrderedDict
 
-uvicorn_logger = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "access": {
-            "()": "uvicorn.logging.AccessFormatter",
-            "fmt": '%(levelprefix)s %(asctime)s :: %(client_addr)s - "%(request_line)s" %(status_code)s',
-            "use_colors": True
-        },
-        "info": {
-            "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": '%(levelprefix)s %(asctime)s - %(message)s',
-            "use_colors": True
-        },
-        "error": {
-            "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": '%(levelprefix)s %(asctime)s - %(message)s',
-            "use_colors": True
-        },
-    },
-    "handlers": {
-        "console": {  # 新增控制台 handler
-            "class": "logging.StreamHandler",
-            "formatter": "info",  # 使用 info 格式
-            "stream": sys.stdout
-        },
-        "access": {
-            "formatter": "access",
-            "class": "logging.StreamHandler",  # 改为控制台输出
-            "stream": sys.stdout  # 指定输出到标准输出
-        },
-        "info": {
-            "formatter": "info",
-            "class": "logging.StreamHandler",  # 改为控制台输出
-            "stream": sys.stdout  # 指定输出到标准输出
-        },
-        "error": {
-            "formatter": "error",
-            "class": "logging.StreamHandler",  # 改为控制台输出
-            "stream": sys.stderr  # 错误日志输出到标准错误
-        },
-    },
-    "loggers": {
-        "uvicorn.access": {
-            "handlers": ["access"],
-            "propagate": False
-        },
-        "uvicorn.info": {
-            "handlers": ["info"],
-            "propagate": False
-        },
-        "uvicorn.error": {
-            "handlers": ["error"],
-            "propagate": False
-        },
-    },
-}
-logging.config.dictConfig(uvicorn_logger)
-logger = logging.getLogger("uvicorn.info")
+
+def move_pos_arg_to_message(_, method_name, ed):
+    """
+    ed 的结构：
+    {
+        'event': '固定字符串',   # 来自第一个位置参数
+        'x': 1,                # 来自关键字参数
+        'y': 2,
+        ...
+    }
+    把 event -> message，其余不动
+    """
+    ed['msg'] = ed.pop('event', '')
+    return ed
+
+
+def reorder_fields(_, __, ed):
+    """保证 level 始终在最前"""
+    ordered = OrderedDict()
+    ordered["level"] = ed.pop("level")    # 先把 level 放第一
+    ordered["msg"] = ed.pop("event")  # event -> message
+    ordered.update(ed)                    # 其余字段追加
+    return ordered
+
+
+structlog.configure(
+    processors=[
+        structlog.processors.add_log_level,   # 添加 level 字段
+        reorder_fields,              # 重排字段,性能影响极低,可以忽略 可替换为move_pos_arg_to_message
+        structlog.processors.JSONRenderer(ensure_ascii=False),  # 输出纯 JSON,不编码为\u形式
+    ],
+    cache_logger_on_first_use=True,
+)
+
+logger = structlog.get_logger()
+
+access_logger = structlog.get_logger("access")
+
+
+if __name__ == '__main__':
+    logger.info("hello", error="this is a test", error_zh_CN="这是一个测试")

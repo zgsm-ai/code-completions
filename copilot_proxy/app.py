@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import time
 
-# import config to load env
+# import config to load env and init logger
 import config as _
 import os
 import uvicorn
@@ -13,6 +14,9 @@ from utils.errors import FauxPilotException
 from instances.tgi_proxy_v2 import TGIProxyV2
 from utils.constant import FIM_INDICATOR
 from services.coder_completions import coder_completions
+from config.log_config import logger
+from starlette.middleware.base import BaseHTTPMiddleware
+
 
 SCORE_INI_PATH = "./config/hide_score.yml"
 
@@ -67,12 +71,33 @@ async def clear_all_cache():
     )
 
 
+class AccessLogMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start = time.time()
+        response = await call_next(request)
+        duration = time.time() - start
+        logger.info(
+            # f"{request.method} {request.url.path} {response.status_code}",
+            "",
+            method=request.method,
+            path=request.url.path,
+            status_code=response.status_code,
+            client_addr=request.client.host,
+            duration_ms=round(duration * 1000, 2),
+        )
+        return response
+
+
+app.add_middleware(AccessLogMiddleware)
+
+
 if __name__ == "__main__":
+
     host = os.environ.get("UVICORN_HOST", "0.0.0.0")
     port = int(os.environ.get("UVICORN_PORT", 5000))
     workers = int(os.environ.get("UVICORN_WORKERS", 2))
     backlog = int(os.environ.get("UVICORN_BACKLOG", 128))
 
-    print("starting uvicorn server! HOST: {} PORT: {} WORKERS: {} backlog: {}".format(host, port, workers, backlog))
+    logger.info("starting uvicorn server! HOST: {} PORT: {} WORKERS: {} backlog: {}".format(host, port, workers, backlog))
 
-    uvicorn.run("app:app", host=host, port=port, workers=workers, backlog=backlog)
+    uvicorn.run("app:app", host=host, port=port, workers=workers, backlog=backlog,access_log=False, log_level="info")
