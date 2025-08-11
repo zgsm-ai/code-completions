@@ -17,5 +17,5 @@ EXPOSE 5000
 
 ENTRYPOINT []
 
-CMD ["uvicorn", "--host", "0.0.0.0", "--port", "5000", "app:app"]
+CMD ["python", "app.py"]
 
