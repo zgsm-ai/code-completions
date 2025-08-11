@@ -1,6 +1,6 @@
 import structlog
 from collections import OrderedDict
-
+from structlog.stdlib import BoundLogger
 
 def move_pos_arg_to_message(_, method_name, ed):
     """
@@ -35,10 +35,12 @@ structlog.configure(
     cache_logger_on_first_use=True,
 )
 
-logger = structlog.get_logger()
-
-access_logger = structlog.get_logger("access")
+logger: BoundLogger = structlog.get_logger()
 
 
 if __name__ == '__main__':
-    logger.info("hello", error="this is a test", error_zh_CN="这是一个测试")
+    logger.debug("debug", info="this is debug", info_zh_CN="这是调试信息")
+    logger.info("hello", info="this is a test", info_zh_CN="这是一个测试")
+    logger.warning("warning", info="something might be wrong", info_zh_CN="有潜在问题")
+    logger.error("error", info="something went wrong", info_zh_CN="出错了")
+    logger.critical("critical", info="system is down", info_zh_CN="系统崩溃")
