@@ -52,12 +52,13 @@ def get_copilot_token():
 @app.post("/v2/completions")
 @app.post("/code-completion/api/v1/completions")
 def completions_v2(data: CompletionRequest, request: Request):
+    request_id = request.headers.get("X-Request-ID", "")
     # 参数封装与处理
     if not data.prompt:
         data.prompt = data.prompt_options.prefix + FIM_INDICATOR + data.prompt_options.suffix
     data = data.dict()
 
-    return coder_completions(data=data, proxy=TGIProxyV2())
+    return coder_completions(data=data, proxy=TGIProxyV2(request_id=request_id))
 
 
 @app.post("/v2/engines/clear_all_cache")

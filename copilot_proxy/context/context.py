@@ -34,6 +34,7 @@ def get_search_switch() -> (bool, bool):
 async def request_context(client_id: str, codebase_path: str, file_path: str,
                           code_snippets: list[str],
                           query: List[Tuple[str, int]],
+                          request_id: str = ""
                           ) -> (List, List, List):
     """ 请求上下文信息, 使用异步请求, 直接返回响应
     Args:
@@ -42,6 +43,7 @@ async def request_context(client_id: str, codebase_path: str, file_path: str,
         file_path (str): 文件路径
         code_snippets (list[str]): 定义检索 代码片段 n个片段, 异步并行查询
         query (List[Tuple[str, int]]): 语义检索 查询信息,元组内分别是查询的内容和返回的个数
+        request_id: 请求id
 
     Returns:
         List, List: 返回上下文信息（定义信息、语义检索信息） 不会返回None,但列表元素可能为None或为空
@@ -57,14 +59,14 @@ async def request_context(client_id: str, codebase_path: str, file_path: str,
             for code_snippet in code_snippets:
                 if code_snippet:
                     tasks.append(
-                        search_definition(session, client_id, codebase_path, file_path, code_snippet, None, None))
+                        search_definition(session, client_id, codebase_path, file_path, code_snippet, None, None, request_id=request_id))
         definition_index = len(tasks)
 
         # 语义检索
         if query and semantic_on:
             for q in query:
                 if q and len(q) == 2:
-                    tasks.append(search_semantic(session, client_id, codebase_path, q[0], q[1]))
+                    tasks.append(search_semantic(session, client_id, codebase_path, q[0], q[1], request_id=request_id))
         # semantic_index = len(tasks)
         if len(tasks) == 0:
             return [], []
@@ -92,7 +94,7 @@ async def request_context(client_id: str, codebase_path: str, file_path: str,
 
 
 def get_context(client_id: str, project_path: str, file_path, prefix: str, suffix: str,
-                import_content: str | None = None) -> str:
+                import_content: str | None = None, request_id: str = "") -> str:
     """获取上下文信息
     Args:
         client_id (str): 客户端id
@@ -101,6 +103,7 @@ def get_context(client_id: str, project_path: str, file_path, prefix: str, suffi
         prefix (str): 前缀
         suffix (str): 后缀
         import_content (str): 导入内容
+        request_id: 请求id
 
     Returns:
         str: 返回上下文信息
@@ -128,7 +131,7 @@ def get_context(client_id: str, project_path: str, file_path, prefix: str, suffi
                                                        project_path,
                                                        file_path,
                                                        definition_code_snap,
-                                                       [(semantic_search_content, 10)]))
+                                                       [(semantic_search_content, 10)], request_id=request_id))
     # 解析返回的语义检索结果,返回全部结果
     semantic_codes = parse_semantic(semantic)
     # 解析定义检索的结果

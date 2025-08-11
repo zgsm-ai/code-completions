@@ -60,7 +60,8 @@ def get_context_token_limit():
 
 class TGIProxyV2:
 
-    def __init__(self):
+    def __init__(self, request_id=""):
+        self.request_id = request_id
         self.MAX_MODEL_LEN = get_context_token_limit()
         self.max_tokens = int(os.environ.get("MAX_TOKENS", 100))
         self.stop_words_dict = init_stop_words_dict()
@@ -111,7 +112,7 @@ class TGIProxyV2:
         self.tokenizer = self.get_tokenizer()
         self.update_fim_tag()
 
-        logger.info(f"model={self.model}, self.FIM_PREFIX={self.FIM_PREFIX}")
+        logger.debug(f"model={self.model}, self.FIM_PREFIX={self.FIM_PREFIX}", request_id=self.request_id)
 
     def get_model_and_host(self, main_model_type):
         if main_model_type == ModelType.OPENAI:
@@ -186,7 +187,7 @@ class TGIProxyV2:
                 self.system_stop_words = self.stop_words_dict[language_id.lower()]
                 self.all_stop_words.extend(list(map(lambda x: LINUX_NL + x,
                                                     self.stop_words_dict.get(language_id.lower(), []))))
-        logger.info(f"all_stop_words={self.all_stop_words}")
+        logger.debug(f"all_stop_words={self.all_stop_words}", request_id=self.request_id)
 
     @function_timer(name="模型生成模块（包括LLM流式输出）")
     def generate(self, data, context_and_intention):
@@ -418,10 +419,10 @@ class TGIProxyV2:
 
             if completion_info:
                 try:
-                    logger.info(f"从连续补全请求{parent_id}的缓存中获取的结果成功！")
+                    logger.info(f"从连续补全请求{parent_id}的缓存中获取的结果成功！",request_id=self.request_id)
                     return json.dumps(completion_info)
                 except json.JSONDecodeError:
-                    logger.warning(f"从缓存中获取的结果解析异常，请检查缓存数据！")
+                    logger.warning(f"从缓存中获取的结果解析异常，请检查缓存数据！",request_id=self.request_id)
 
         # 1. 前置准备
         st = time.time()
@@ -469,8 +470,9 @@ class TGIProxyV2:
             # 获取额外的上下文
             if code_context == "":
                 context_time = time.time()
-                code_context = get_context(client_id, project_path, file_project_path, prefix, suffix, import_content)
-                logger.info(f"上下文请求耗时：{(time.time() - context_time) * 1000: .4f}ms, ")
+                code_context = get_context(client_id, project_path, file_project_path, prefix, suffix, import_content,
+                                           request_id=self.request_id)
+                logger.info(f"上下文请求耗时：{(time.time() - context_time) * 1000: .4f}ms, ", request_id=self.request_id)
                 # 将上下文放到原始请求数据中,在连续的补全中，就不会重复请求上下文。
                 # 如果是标准prompt,上下文放到code_context中去
                 if is_standard_prompt:
@@ -496,7 +498,7 @@ class TGIProxyV2:
                         f"language={language}, "
                         f"is_single_completion={is_single_completion}, "
                         f"prompt_tokens={prompt_tokens}, "
-                        f"trigger_mode={trigger_mode}")
+                        f"trigger_mode={trigger_mode}", request_id=self.request_id)
 
             # 2.请求补全
             if prompt_tokens > 0:
@@ -511,13 +513,13 @@ class TGIProxyV2:
                 )
                 completion, choices, is_cache = self.generate(data, context_and_intention)
             else:
-                logger.info(f"{data['x-complete-id']} no line use to completion after prepare!")
+                logger.info(f"{data['x-complete-id']} no line use to completion after prepare!", request_id=self.request_id)
                 completion = self.construct_completion()
                 choices = []
                 prompt_tokens = 0
 
         except Exception:
-            logger.error(traceback.format_exc())
+            logger.error(traceback.format_exc(), request_id=self.request_id)
             completion = self.construct_completion()
             choices = []
             prompt_tokens = 0
@@ -536,7 +538,7 @@ class TGIProxyV2:
                 prefix=new_prefix,
                 suffix=new_suffix,
             )
-            completion_postprocessor_chain = CompletionPostprocessorFactory.create_default()
+            completion_postprocessor_chain = CompletionPostprocessorFactory.create_default(self.request_id)
             completion_postprocessor_chain.process(postprocessor_context)
 
             # 无实际补全内容，置为空
@@ -603,6 +605,6 @@ class TGIProxyV2:
                     self.continue_completion_service.async_send_v2_completion(
                         completion_request=new_completion_request)
 
-        logger.info(f"{completion['id']} Returned completion in {(ed - st) * 1000} ms")
+        logger.info(f"{completion['id']} Returned completion in {(ed - st) * 1000} ms", request_id=self.request_id)
         # 统一响应，不再支持客户端流式响应
         return json.dumps(completion)

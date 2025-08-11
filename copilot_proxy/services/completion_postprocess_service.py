@@ -127,8 +127,9 @@ class CutSuffixOverlapProcessor(AbstractCompletionPostprocessor):
 
 
 class CompletionPostprocessorChain:
-    def __init__(self, postprocessors: list[AbstractCompletionPostprocessor]):
+    def __init__(self, postprocessors: list[AbstractCompletionPostprocessor], request_id=""):
         self.postprocessors = postprocessors
+        self.request_id = request_id
         self.__hit_processors = []
 
     def __process_discard(self, context: CompletionPostprocessorContext) -> bool:
@@ -153,7 +154,7 @@ class CompletionPostprocessorChain:
         :param context:
         :return:
         """
-        logger.info(f"后处理前的补全内容为：{context.completion_code}")
+        logger.info(f"后处理前的补全内容为：{context.completion_code}", request_id=self.request_id)
         discard_flag = self.__process_discard(context)
         if discard_flag:
             context.completion_code = ""
@@ -167,7 +168,7 @@ class CompletionPostprocessorChain:
 
 class CompletionPostprocessorFactory:
     @staticmethod
-    def create_default() -> CompletionPostprocessorChain:
+    def create_default(request_id="") -> CompletionPostprocessorChain:
         return CompletionPostprocessorChain(
                 [
                     DiscardExtremeRepetitionProcessor(),
@@ -175,7 +176,8 @@ class CompletionPostprocessorFactory:
                     CutRepetitiveTextProcessor(),
                     CutPrefixOverlapProcessor(),
                     CutSuffixOverlapProcessor()
-                ]
+                ],
+                request_id=request_id
             )
 
     @staticmethod

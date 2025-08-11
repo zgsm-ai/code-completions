@@ -62,7 +62,7 @@ class ContinueCompletionService:
         from services.coder_completions import coder_completions
         from instances.tgi_proxy_v2 import TGIProxyV2
         try:
-            return coder_completions(data=completion_request.dict(), proxy=TGIProxyV2())
+            return coder_completions(data=completion_request.dict(), proxy=TGIProxyV2("continue-completion"))
         except Exception as e:
             logger.error(f"请求补全接口异常，parent_id: {completion_request.parent_id}，error: {e}")
             raise HTTPException(status_code=500, detail=f"请求补全接口异常: {e}")

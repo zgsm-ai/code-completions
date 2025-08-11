@@ -29,10 +29,6 @@ def get_base_url():
         BASE_URL = os.environ.get('CODEBASE_INDEXER_API_BASE_URL', "")
     return BASE_URL
 
-
-headers = {}
-
-
 CONTEXT_COST_TIME = None
 
 
@@ -44,20 +40,24 @@ def get_context_cost_time():
     return CONTEXT_COST_TIME
 
 
-async def req(session: aiohttp.client, url: str, params: dict) -> dict | None:
+async def req(session: aiohttp.client, url: str, params: dict, request_id: str = "") -> dict | None:
     start = time.time()
+    headers = {
+        "X-Request-ID": request_id
+    }
+
     """发送HTTP请求"""
     try:
         async with session.get(url, params=params, headers=headers, timeout=get_context_cost_time()) as resp:
             if resp.status != 200:
-                logger.error(f"request failed, status code: {resp.status}, url: {url}")
+                logger.warning(f"request failed, status code: {resp.status}, url: {url}", request_id=request_id)
                 return None
             return await resp.json()
     except aiohttp.ClientError as e:
-        logger.error(f"Network or client error: {str(e)}, url: {url}")
+        logger.warning(f"Network or client error: {str(e)}, url: {url}", request_id=request_id)
         return None
     except BaseException as e:
-        logger.error(f"Unexpected error: {str(e)}, url: {url}")
+        logger.warning(f"Unexpected error: {str(e)}, url: {url}", request_id=request_id)
         return None
     # finally:
         # end = time.time()
@@ -65,7 +65,8 @@ async def req(session: aiohttp.client, url: str, params: dict) -> dict | None:
 
 
 async def search_definition(session: aiohttp.client, client_id,
-                            codebase_path, file_path, code_snippet, start_line: int | None = None, end_line: int | None = None):
+                            codebase_path, file_path, code_snippet, start_line: int | None = None, end_line: int | None = None,
+                            request_id: str = ""):
     """搜索代码定义（异步）
 
     需要满足 start_line & end_lien | code_snippet != None
@@ -78,9 +79,11 @@ async def search_definition(session: aiohttp.client, client_id,
         code_snippet: 代码片段
         start_line: 起始行
         end_line: 结束行
+        request_id: 请求id
 
     Returns:
         dict: 成功返回response.json()，失败返回None
+
     """
     url = f"{get_base_url()}/codebase-indexer/api/v1/search/definition"
     params = {
@@ -95,10 +98,10 @@ async def search_definition(session: aiohttp.client, client_id,
     if code_snippet:
         params['codeSnippet'] = code_snippet
 
-    return await req(session, url, params)
+    return await req(session, url, params, request_id=request_id)
 
 
-async def search_semantic(session: aiohttp.client, client_id, codebase_path, query, top_k):
+async def search_semantic(session: aiohttp.client, client_id, codebase_path, query, top_k, request_id: str = ""):
     """语义搜索（异步）
     Args:
         session: aiohttp.client: aiohttp.ClientSession对象
@@ -106,6 +109,7 @@ async def search_semantic(session: aiohttp.client, client_id, codebase_path, que
         codebase_path: 代码库路径
         query: 查询字符串
         top_k: 返回结果数量
+        request_id: 请求id
 
     Returns:
         dict: 成功返回response.json()，失败返回None
@@ -118,11 +122,11 @@ async def search_semantic(session: aiohttp.client, client_id, codebase_path, que
         'topK': top_k
     }
 
-    return await req(session, url, params)
+    return await req(session, url, params,request_id=request_id)
 
 
 async def search_relation(session: aiohttp.client, client_id, codebase_path,
-                          file_path, code_snippet, include_content=False, max_layer=5):
+                          file_path, code_snippet, include_content=False, max_layer=5, request_id: str = ""):
     """关系检索（异步）
     Args:
         session: aiohttp.client: aiohttp.ClientSession对象
@@ -132,6 +136,7 @@ async def search_relation(session: aiohttp.client, client_id, codebase_path,
         code_snippet: 代码片段
         include_content: 是否包含代码内容
         max_layer: 最大层级
+        request_id: 请求id
 
     Returns:
         dict: 成功返回response.json()，失败返回None
@@ -145,6 +150,6 @@ async def search_relation(session: aiohttp.client, client_id, codebase_path,
         'maxLayer': max_layer
     }
 
-    return await req(session, url, params)
+    return await req(session, url, params,request_id=request_id)
 
 
