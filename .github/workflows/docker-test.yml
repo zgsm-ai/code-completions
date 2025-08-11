@@ -1,0 +1,58 @@
+name: Build and Test Docker Image to GHCR
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        default: 'test'
+        type: choice
+        options:
+        - test
+  push:
+    branches:
+      - 'dev'
+
+jobs:
+  build-and-push-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate timestamp and test version
+        run: |
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          TEST_VERSION="test-${TIMESTAMP}"
+          echo "TEST_VERSION=$TEST_VERSION" >> $GITHUB_ENV
+          echo "Generated test version: $TEST_VERSION"
+
+      - name: Build Docker test image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}:${{ env.TEST_VERSION }} .
+
+      - name: Push test image to GHCR
+        run: |
+          docker push ghcr.io/${{ github.repository }}:${{ env.TEST_VERSION }}
+          
+      - name: Output test image info
+        run: |
+          echo "Test image pushed to: ghcr.io/${{ github.repository }}:${{ env.TEST_VERSION }}"
+          echo "Image can be pulled with: docker pull ghcr.io/${{ github.repository }}:${{ env.TEST_VERSION }}"
