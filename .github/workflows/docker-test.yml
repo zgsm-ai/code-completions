@@ -13,6 +13,13 @@ on:
   push:
     branches:
       - 'dev'
+    paths:
+      - 'Dockerfile'
+      - 'copilot_proxy/**'
+      - 'copilot_proxy/requirements.txt'
+      - '!copilot_proxy/tests/**'
+      - '!copilot_proxy/docs/**'
+      - '!.github/workflows/docker-test.yml'
 
 jobs:
   build-and-push-test:
