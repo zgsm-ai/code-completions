@@ -116,6 +116,11 @@ def get_context(client_id: str, project_path: str, file_path, prefix: str, suffi
         suffix = ""
     if import_content is None:
         import_content = ""
+    file_path = os.path.join(project_path, file_path)
+    # win 风格路径
+    if len(project_path) > 1 and project_path[1:3] == ':\\':
+        file_path = file_path.replace("/", "\\")
+
     # 获取prefix最后n行代码 (语义检索),
     # n_line_code = get_code_last_n_lines(prefix, 3)
     semantic_search_content = r_slice_after_nth_instance(prefix, "\n", 4)
@@ -126,7 +131,7 @@ def get_context(client_id: str, project_path: str, file_path, prefix: str, suffi
         # 全部行在后, 后续处理权重更低
         "{}{}{}".format(import_content, prefix, suffix)
     ]
-    # 请求关系/定义
+    # 请求定义、语义
     definition, semantic = asyncio.run(request_context(client_id,
                                                        project_path,
                                                        file_path,
