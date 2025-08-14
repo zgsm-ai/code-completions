@@ -33,7 +33,7 @@ def init():
     return
 
 
-async def req(session: aiohttp.client, url: str, params: dict, request_id: str = "") -> dict | None:
+async def req(session: aiohttp.client, url: str, params: dict, request_id: str = "", method="get") -> dict | None:
     start = time.time()
     headers = {
         "X-Request-ID": request_id
@@ -42,11 +42,19 @@ async def req(session: aiohttp.client, url: str, params: dict, request_id: str =
     """发送HTTP请求"""
     global CONTEXT_COST_TIME
     try:
-        async with session.get(url, params=params, headers=headers, timeout=CONTEXT_COST_TIME) as resp:
-            if resp.status != 200:
-                logger.warning(f"request failed, status code: {resp.status}, url: {url}", request_id=request_id)
-                return None
-            return await resp.json()
+        if method == "get":
+            async with session.get(url, params=params, headers=headers, timeout=CONTEXT_COST_TIME) as resp:
+                if resp.status != 200:
+                    logger.warning(f"request failed, status code: {resp.status}, url: {url}", request_id=request_id)
+                    return None
+                return await resp.json()
+        else:
+            async with session.post(url, json=params, headers=headers, timeout=CONTEXT_COST_TIME) as resp:
+                if resp.status != 200:
+                    logger.warning(f"request failed, status code: {resp.status}, url: {url}", request_id=request_id)
+                    logger.debug(await resp.text())
+                    return None
+                return await resp.json()
     except aiohttp.ClientError as e:
         logger.warning(f"Network or client error: {str(e)}, url: {url}", request_id=request_id)
         return None
@@ -116,7 +124,7 @@ async def search_semantic(session: aiohttp.client, client_id, codebase_path, que
         'topK': top_k
     }
 
-    return await req(session, codebase_semantic_url, params,request_id=request_id)
+    return await req(session, codebase_semantic_url, params, request_id=request_id, method="post")
 
 
 async def search_relation(session: aiohttp.client, client_id, codebase_path,
