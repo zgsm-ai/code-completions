@@ -60,8 +60,11 @@ def get_context_token_limit():
 
 class TGIProxyV2:
 
-    def __init__(self, request_id=""):
-        self.request_id = request_id
+    def __init__(self, headers: dict = None,):
+        if headers is None:
+            headers = {}
+        self.request_id = headers.get("X-Request-ID", "")
+        self.headers = headers
         self.MAX_MODEL_LEN = get_context_token_limit()
         self.max_tokens = int(os.environ.get("MAX_TOKENS", 100))
         self.stop_words_dict = init_stop_words_dict()
@@ -471,7 +474,7 @@ class TGIProxyV2:
             if code_context == "":
                 context_time = time.time()
                 code_context = get_context(client_id, project_path, file_project_path, prefix, suffix, import_content,
-                                           request_id=self.request_id)
+                                           self.headers)
                 logger.info(f"上下文请求耗时：{(time.time() - context_time) * 1000: .4f}ms, ", request_id=self.request_id)
                 # 将上下文放到原始请求数据中,在连续的补全中，就不会重复请求上下文。
                 # 如果是标准prompt,上下文放到code_context中去

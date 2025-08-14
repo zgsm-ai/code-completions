@@ -22,7 +22,7 @@ class TestRequestContext(TestCase):
                 codebase_path="/test",
                 file_path="test.py",
                 code_snippets=["test1", "test2"],
-                query=[("query1", 1), ("query2", 2)]
+                query=["query1", "query2"]
             )
 
             self.assertTrue(len(def_results) > 0)  # 定义检索结果不为空

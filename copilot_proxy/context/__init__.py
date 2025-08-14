@@ -1,4 +1,5 @@
-from .context import get_context
-from .api import init
+from .context import get_context, init_context_config
+from .api import init_api
 
-init()
+init_api()
+init_context_config()
