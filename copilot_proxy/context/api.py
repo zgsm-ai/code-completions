@@ -42,10 +42,10 @@ async def req(session: aiohttp.client, url: str, params: dict, headers: dict = N
     if headers is None:
         headers = {}
 
-    request_id = headers.get("X-Request-ID", "")
+    request_id = headers.get("x-request-id", "")
     req_headers = {
-        "X-Request-ID": headers.get("X-Request-ID", ""),
-        "Authorization": headers.get("Authorization", "")
+        "x-request-id": headers.get("x-request-id", ""),
+        "authorization": headers.get("authorization", "")
     }
 
     """发送HTTP请求"""
