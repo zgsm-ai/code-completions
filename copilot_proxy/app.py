@@ -58,8 +58,8 @@ def completions_v2(data: CompletionRequest, request: Request):
     data = data.dict()
     # Header转换为dict
     headers = dict(request.headers)
-
-    return coder_completions(data=data, proxy=TGIProxyV2(headers=headers))
+    x_request_id = request.headers.get("x-request-id")
+    return coder_completions(data=data, proxy=TGIProxyV2(headers=headers), request_id=x_request_id)
 
 
 @app.post("/v2/engines/clear_all_cache")

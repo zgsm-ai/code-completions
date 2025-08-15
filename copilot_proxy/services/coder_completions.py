@@ -8,7 +8,7 @@ from utils.common import random_completion_id
 from services.completion_reject_service import completion_reject_rule_chain
 
 
-def coder_completions(data: dict, proxy):
+def coder_completions(data: dict, proxy, request_id: str = ''):
 
     # c++ -> cpp
     if data.get("language_id") and data.get("language_id") == 'c++':
@@ -25,7 +25,7 @@ def coder_completions(data: dict, proxy):
         return reject_judge_result
 
     return Response(
-        headers={'x-complete-id': complete_id},
+        headers={'x-complete-id': complete_id, 'x-request-id': request_id},
         status_code=200,
         content=proxy(data=data),
         media_type="application/json"
