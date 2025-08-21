@@ -1,0 +1,27 @@
+Code Completion Server deployed successfully!
+
+Namespace: {{ .Release.Namespace }}
+Release: {{ .Release.Name }}
+Application: {{ .Values.appName }}
+
+Service:
+  Type: {{ .Values.service.type }}
+  Port: {{ .Values.service.port }}
+  {{- if eq .Values.service.type "NodePort" }}
+  NodePort: {{ .Values.service.nodePort }}
+  Access URL: http://<NODE-IP>:{{ .Values.service.nodePort }}
+  {{- else }}
+  Cluster IP: {{ .Values.service.port }}
+  {{- end }}
+
+Image: {{ .Values.image.repository }}
+
+Environment:
+  MAIN_MODEL_TYPE: {{ .Values.env.MAIN_MODEL_TYPE }}
+  OPENAI_MODEL: {{ .Values.env.OPENAI_MODEL }}
+
+Check the pod status:
+  kubectl get pods -n {{ .Release.Namespace }} -l app={{ .Values.appName }}
+
+View logs:
+  kubectl logs -n {{ .Release.Namespace }} -l app={{ .Values.appName }}
