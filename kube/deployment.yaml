@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: code-completion-server
-  namespace: "shenma" # 命名空间
+  namespace: "costrict" # 命名空间
 spec:
   replicas: 1 # 设置数量
   selector:
@@ -82,7 +82,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: code-completion-svc
-  namespace: "shenma" # 命名空间
+  namespace: "costrict" # 命名空间
 spec:
   type: ClusterIP
   selector:
