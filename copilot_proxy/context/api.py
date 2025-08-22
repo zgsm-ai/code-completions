@@ -43,9 +43,11 @@ async def req(session: aiohttp.client, url: str, params: dict, headers: dict = N
         headers = {}
 
     request_id = headers.get("x-request-id", "")
+    # 部分透传请求头，不区分大小写
     req_headers = {
         "x-request-id": headers.get("x-request-id", ""),
-        "authorization": headers.get("authorization", "")
+        "authorization": headers.get("authorization", ""),
+        "x-costrict-version": headers.get("x-costrict-version", ""),
     }
 
     """发送HTTP请求"""
