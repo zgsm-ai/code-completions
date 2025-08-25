@@ -9,6 +9,8 @@ from services.completion_reject_service import completion_reject_rule_chain
 
 
 def coder_completions(data: dict, proxy, request_id: str = ''):
+    if not request_id:
+        request_id = ''
 
     # c++ -> cpp
     if data.get("language_id") and data.get("language_id") == 'c++':
