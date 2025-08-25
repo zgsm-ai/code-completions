@@ -57,6 +57,7 @@ async def req(session: aiohttp.client, url: str, params: dict, headers: dict = N
             async with session.get(url, params=params, headers=req_headers, timeout=CONTEXT_REQUEST_TIMEOUT) as resp:
                 if resp.status != 200:
                     logger.warning(f"request failed, status code: {resp.status}, url: {url}", request_id=request_id)
+                    logger.debug(await resp.text())
                     return None
                 return await resp.json()
         else:
