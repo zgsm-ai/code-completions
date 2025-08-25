@@ -1,0 +1,128 @@
+# values.yaml
+
+# 应用名称（可覆盖）
+nameOverride: ""
+fullnameOverride: ""
+
+# 副本数
+replicaCount: 2
+
+# 镜像配置
+image:
+  repository: ""  # 必须由用户填写
+  pullPolicy: IfNotPresent
+
+# 资源限制
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "1"
+  limits:
+    memory: "4Gi"
+    cpu: "2"
+
+# 容器端口
+containerPort: 5000
+
+# 环境变量（可全部自定义）
+env:
+
+  # 补全结果隐藏分数阈值（低于此分数的结果将被过滤或隐藏）
+  THRESHOLD_SCORE: "0.3"
+
+  # 主模型类型：支持 local、aip、openai 等，决定使用哪种 LLM 接入方式
+  MAIN_MODEL_TYPE: "openai"
+
+  # 模型上下文长度限制，格式为 "prompt_tokens,completion_tokens"，表示提示和生成部分的最大 token 数
+  MAX_MODEL_LEN: "5000,1000"
+
+  # OPENAI 兼容模型服务地址（如阿里云百炼、DashScope 等），需包含 API 路径
+  OPENAI_MODEL_HOST: ""
+
+  # OPENAI 模型名称（如 gpt-3.5-turbo、qwen2.5-coder-3b-instruct 等）
+  OPENAI_MODEL: ""
+
+  # OPENAI 模型认证密钥（Authorization Bearer Token），用于 API 认证
+  OPENAI_MODEL_AUTHORIZATION: ""
+
+  # 上下文定义检索服务的完整请求 URL（用于精确匹配类/方法定义）
+  CODEBASE_DEFINITION_URL: "http://codebase-querier-svc.costrict.svc.cluster.local:8888/codebase-indexer/api/v1/search/definition"
+
+  # 上下文语义检索服务的完整请求 URL（用于相似代码片段搜索）
+  CODEBASE_SEMANTIC_URL: "http://codebase-embedder-svc.costrict.svc.cluster.local:8888/codebase-embedder/api/v1/search/semantic"
+
+  # 语义检索返回的最相似结果数量（Top-K）
+  CODEBASE_SEMANTIC_TOP_K: "5"
+
+  # 语义检索结果的最低相似度分数阈值（低于此值的结果将被过滤）
+  CODEBASE_SEMANTIC_SCORE_THRESHOLD: "0.5"
+
+  # 整个上下文检索阶段允许的总耗时（单位：毫秒）
+  CONTEXT_COST_TIME: "1700"
+
+  # 单次上下文请求的最大超时时间（单位：毫秒）
+  CONTEXT_REQUEST_TIMEOUT: "1000"
+
+  # 模型单次生成响应的最大 token 数
+  MAX_TOKENS: "500"
+
+  # 模型生成阶段允许的最大耗时（单位：毫秒）
+  MAX_MODEL_COST_TIME: "2800"
+
+  # 用户可容忍的总请求耗时上限（从发起请求到收到响应，单位：毫秒）
+  MAX_COST_TIME: "3000"
+
+  # 流式多行补全中，达到该行数时触发语法正确性检查
+  MULTI_LINE_STREAM_K: "8"
+
+  # 在引入上下文后，必须保留的最少前缀 token 数（确保补全基于足够上下文）
+  MIN_PREFIX_TOKEN: "2000"
+
+  # 是否启用 Redis 缓存（True/False）
+  ENABLE_REDIS: "False"
+
+  # Redis 服务主机地址
+  REDIS_HOST: ""
+
+  # Redis 服务端口
+  REDIS_PORT: ""
+
+  # Redis 使用的数据库编号（0-15）
+  REDIS_DB: ""
+
+  # Redis 连接密码（若无则为空）
+  REDIS_PWD: ""
+
+  # 补全结果在 Redis 中的缓存时间（单位：秒，如 86400 = 1 天）
+  COMPLETION_CACHE_TIME: "86400"
+
+  # 连续补全（continue completion）结果的缓存过期时间（单位：秒）
+  CONTINUE_COMPLETION_CACHE_EXPIRED: "30"
+
+  # 是否禁用语言特征拒绝功能（如过滤非代码内容）
+  DISABLED_REJECT_LANGUAGE_FEATURE: "True"
+
+  # 是否禁用低隐藏分数结果的拒绝机制
+  DISABLED_REJECT_LOW_HIDDEN_SCORE: "True"
+
+  # 是否关闭上下文定义检索功能（True 表示关闭）
+  DISABLE_CONTEXT_DEF_SEARCH: "False"
+
+  # 是否关闭上下文语义检索功能（True 表示关闭）
+  DISABLE_CONTEXT_SEMANTIC: "False"
+
+# Service 配置
+service:
+  type: NodePort
+  port: 5000
+  targetPort: 5000
+  nodePort: 32500  # 可选，如果 type=NodePort 才生效
+
+# 程序容器名称（可选）
+containerName: code-completion-container
+
+# 部署名称（用于 metadata.name）
+appName: code-completion-server
+
+# Service 名称
+serviceName: code-completion-svc

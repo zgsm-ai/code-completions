@@ -104,10 +104,13 @@ class CompletionRejectRuleChain:
 
     def __init__(self):
 
-        self._default_reject_handlers = [
-            LanguageFeatureRejectHandler(),
-            LowHiddenScoreRejectHandler(),
-        ]
+        self._default_reject_handlers = []
+        if os.environ.get("DISABLED_SCORE_REJECT", "false") == "false":
+            self._default_reject_handlers.append(LowHiddenScoreRejectHandler())
+
+        if os.environ.get("DISABLED_REJECT_LANGUAGE_FEATURE", "false") == "false":
+            self._default_reject_handlers.append(LanguageFeatureRejectHandler())
+
 
     def handle(self, data) -> Response | None:
         """

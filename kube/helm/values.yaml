@@ -1,0 +1,49 @@
+# values.yaml
+
+# 副本数
+replicaCount: 2
+
+# 镜像配置
+image:
+  repository: ""  #
+  pullPolicy: IfNotPresent
+
+# 资源限制
+resources:
+  requests:
+    memory: "4Gi"
+    cpu: "2"
+  limits:
+    memory: "8Gi"
+    cpu: "4"
+
+# 环境变量（可全部自定义）
+env:
+  # 补全模型地址
+  OPENAI_MODEL_HOST: "http://localhost/v1/completions"
+  # 补全模型
+  OPENAI_MODEL: ""
+  # 上下文定义检索服务的完整请求 URL（用于精确匹配类/方法定义）
+  CODEBASE_DEFINITION_URL: "http://codebase-querier-svc.costrict.svc.cluster.local:8888/codebase-indexer/api/v1/search/definition"
+  # 上下文语义检索服务的完整请求 URL（用于相似代码片段搜索）
+  CODEBASE_SEMANTIC_URL: "http://codebase-embedder-svc.costrict.svc.cluster.local:8888/codebase-embedder/api/v1/search/semantic"
+  # 整个上下文检索阶段允许的总耗时（单位：毫秒）
+  CONTEXT_COST_TIME: "1700"
+  # 单次上下文请求的最大超时时间（单位：毫秒）
+  CONTEXT_REQUEST_TIMEOUT: "1000"
+  # 模型单次生成响应的最大 token 数
+  MAX_TOKENS: "500"
+  # 模型生成阶段允许的最大耗时（单位：毫秒）
+  MAX_MODEL_COST_TIME: "2800"
+  # 用户可容忍的总请求耗时上限（从发起请求到收到响应，单位：毫秒）
+  MAX_COST_TIME: "3000"
+  # 是否禁用语言特征拒绝功能（如过滤非代码内容）
+  DISABLED_REJECT_LANGUAGE_FEATURE: "True"
+
+
+# Service 配置
+service:
+  type: NodePort
+  port: 5000
+  targetPort: 5000
+  nodePort: 32500  # 可选，如果 type=NodePort 才生效

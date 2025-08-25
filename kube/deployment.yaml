@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: code-completion-server
-  namespace: "shenma" # 命名空间
+  namespace: "costrict" # 命名空间
 spec:
   replicas: 1 # 设置数量
   selector:
@@ -38,10 +38,18 @@ spec:
             value: "DeepSeek-Coder-V2-Lite-Base"  # 模型名称
           - name: OPENAI_MODEL_AUTHORIZATION
             value: ""  # 模型认证key可选
-          - name: CODEBASE_INDEXER_API_BASE_URL
-            value: "http://codebase-indexer-svc.shenma.svc.cluster.local:8888"  # 上下文请求地址
-          - name: CONTEXT_COST_TIME # 上下文最长请求时间 ms
-            value: "1500"
+          - name: CODEBASE_DEFINITION_URL
+            value: "http://codebase-indexer-svc.shenma.svc.cluster.local:8888/codebase-indexer/api/v1/search/definition" # 定义检索地址
+          - name: CODEBASE_SEMANTIC_URL
+            value: "http://codebase-indexer-svc.shenma.svc.cluster.local:8888/codebase-embedder/api/v1/search/semantic" # 语义检索地址
+          - name: CODEBASE_SEMANTIC_TOP_K
+            value: "5"
+          - name: CODEBASE_SEMANTIC_SCORE_THRESHOLD
+            value: "0.5"
+          - name: CONTEXT_COST_TIME # 上下文最长处理请求时间 ms
+            value: "1700"
+          - name: CONTEXT_REQUEST_TIMEOUT # 上下文最长请求时间 ms
+            value: "1000"
           - name: MAX_TOKENS
             value: "500"
           - name: MAX_MODEL_COST_TIME
@@ -74,7 +82,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: code-completion-svc
-  namespace: "shenma" # 命名空间
+  namespace: "costrict" # 命名空间
 spec:
   type: ClusterIP
   selector:
