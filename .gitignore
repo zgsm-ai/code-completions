@@ -317,3 +317,6 @@ dmypy.json
 cython_debug/
 copilot_proxy/ast_tools/cmd/ast-rs
 copilot_proxy/ast_tools/cmd/ast-rs.exe
+
+# Ignore .tgz files in kube/helm/code-completion/ directory
+kube/helm/code-completion/*.tgz

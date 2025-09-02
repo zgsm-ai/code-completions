@@ -126,3 +126,51 @@ appName: code-completion-server
 
 # Service 名称
 serviceName: code-completion-svc
+
+# 探针配置
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 5000
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# HPA 配置
+hpa:
+ enabled: true # 是否启用 HPA
+ minReplicas: 1 # 最小副本数
+ maxReplicas: 10 # 最大副本数
+ targetCPUUtilizationPercentage: 80 # CPU 使用率目标百分比
+ targetMemoryUtilizationPercentage: 80 # 内存使用率目标百分比
+ behavior:
+   scaleUp:
+     stabilizationWindowSeconds: 30 # 扩容稳定窗口时间
+     policies:
+     - type: Percent
+       value: 50 # 每次最多增加 50% 的副本数
+       periodSeconds: 60
+     - type: Pods
+       value: 2 # 每次最多增加 2 个副本
+       periodSeconds: 60
+     selectPolicy: Max # 选择较大的策略
+   scaleDown:
+     stabilizationWindowSeconds: 300 # 缩容稳定窗口时间（5分钟）
+     policies:
+     - type: Percent
+       value: 10 # 每次最多减少 10% 的副本数
+       periodSeconds: 60
+     - type: Pods
+       value: 1 # 每次最多减少 1 个副本
+       periodSeconds: 60
+     selectPolicy: Min # 选择较小的策略
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 5000
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
