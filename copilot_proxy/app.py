@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import time
+from datetime import datetime
 
 # import config to load env and init logger
 import config as _
@@ -73,6 +74,36 @@ async def clear_all_cache():
     )
 
 
+@app.get("/healthz")
+def healthz():
+    """K8s health check endpoint"""
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": "oidc-auth.userNotFound",
+            "data": "",
+            "message": "",
+            "success": False,
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
+
+@app.get("/ready")
+def ready():
+    """K8s readiness check endpoint"""
+    return JSONResponse(
+        status_code=200,
+        content={
+            "code": "oidc-auth.userNotFound",
+            "data": "",
+            "message": "",
+            "success": False,
+            "timestamp": datetime.now().isoformat()
+        }
+    )
+
+
 class AccessLogMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         start = time.time()
@@ -103,3 +134,4 @@ if __name__ == "__main__":
     logger.info("starting uvicorn server! HOST: {} PORT: {} WORKERS: {} backlog: {}".format(host, port, workers, backlog))
 
     uvicorn.run("app:app", host=host, port=port, workers=workers, backlog=backlog,access_log=False, log_level="info")
+
