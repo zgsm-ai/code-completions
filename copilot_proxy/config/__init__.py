@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from .log_config import logger
+from .log_config import logger,set_level
 import logging
 
 
@@ -18,12 +18,16 @@ def set_logger():
     structlog_handler = StructlogHandler()
     
     # change uvicorn logger
-    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
-        log = logging.getLogger(name)
+    for uv in (("uvicorn", logging.INFO), ("uvicorn.error", logging.ERROR), ("uvicorn.access", logging.INFO)):
+        log = logging.getLogger(uv[0])
         log.handlers.clear()
         log.addHandler(structlog_handler)  # 使用适配器 handler
         log.propagate = False  # 防止重复
-
+        log.setLevel(uv[1])
 
 
 set_logger()
+
+set_level(os.getenv('LOG_LEVEL', 'INFO'))
+
+logger.debug("init log ok")
