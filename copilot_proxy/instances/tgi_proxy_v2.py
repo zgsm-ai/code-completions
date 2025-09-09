@@ -12,6 +12,11 @@ import pytz
 
 from config.log_config import logger
 from instances.redis_cache import RedisCache
+from metrics.prometheus_metrics import (
+    record_completion_duration,
+    record_completion_tokens,
+    increment_completion_requests
+)
 
 from utils.common import (get_completion_cache, completion_make_cache,
                           get_tokenizer_path, load_tokenizer, is_valid_content,
@@ -471,11 +476,13 @@ class TGIProxyV2:
         original_data = copy.deepcopy(data)
         try:
             # 获取额外的上下文
+            context_duration = 0  # 初始化上下文耗时
             if code_context == "":
                 context_time = time.time()
                 code_context = get_context(client_id, project_path, file_project_path, prefix, suffix, import_content,
                                            self.headers)
-                logger.info(f"上下文请求耗时：{(time.time() - context_time) * 1000: .4f}ms, ", request_id=self.request_id)
+                context_duration = time.time() - context_time
+                logger.info(f"上下文请求耗时：{context_duration * 1000: .4f}ms, ", request_id=self.request_id)
                 # 将上下文放到原始请求数据中,在连续的补全中，就不会重复请求上下文。
                 # 如果是标准prompt,上下文放到code_context中去
                 if is_standard_prompt:
@@ -609,5 +616,33 @@ class TGIProxyV2:
                         completion_request=new_completion_request)
 
         logger.info(f"{completion['id']} Returned completion in {(ed - st) * 1000} ms", request_id=self.request_id)
+        
+        # 普罗米修斯统计指标
+        # 确定请求状态
+        status = "success" if choices and len(choices) > 0 and choices[0].get('text') else "error_too_long"
+        
+        # 记录请求总数
+        increment_completion_requests(model=self.model, status=status)
+        
+        # 记录输入token数量
+        record_completion_tokens(token_type="input", model=self.model, token_count=prompt_tokens)
+        
+        # 记录输出token数量（如果有的话）
+        if status == "success" and completion.get('completion_tokens'):
+            record_completion_tokens(token_type="output", model=self.model, token_count=completion['completion_tokens'])
+        
+        # 记录上下文请求耗时（如果有的话）
+        if context_duration > 0:
+            record_completion_duration(phase="context", model=self.model, status=status, duration=context_duration)
+        
+        # 记录LLM耗时（如果有的话）
+        if completion.get('model_cost_time'):
+            llm_duration = completion['model_cost_time'] / 1000.0  # 转换为秒
+            record_completion_duration(phase="llm", model=self.model, status=status, duration=llm_duration)
+        
+        # 记录总耗时
+        total_duration = (ed - st)  # 总耗时（秒）
+        record_completion_duration(phase="total", model=self.model, status=status, duration=total_duration)
+        
         # 统一响应，不再支持客户端流式响应
         return json.dumps(completion)

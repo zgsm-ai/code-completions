@@ -1,0 +1,88 @@
+name: Build and Publish Docker Image to GHCR and Docker Hub
+
+# 触发条件：当推送以 'v' 开头的标签时触发工作流 如 github push origin v1.1.0
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # 构建和推送任务
+  build-and-push:
+    # 运行在最新的 Ubuntu 环境上
+    runs-on: ubuntu-latest
+    # 设置权限
+    permissions:
+      contents: read      # 读取代码库内容权限
+      packages: write     # 写入包权限（用于推送到 GHCR）
+
+    steps:
+      # 步骤1：检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true       # 启用 Git LFS 支持
+
+      # 步骤2：设置 Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 步骤3：登录到 GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}                    # 使用 GitHub 用户名
+          password: ${{ secrets.GITHUB_TOKEN }}            # 使用 GitHub 自动生成的 token
+
+      # 步骤4：从标签中提取版本号
+      - name: Extract version from tag
+        run: |
+          VERSION=${{ github.ref }}                        # 获取完整的引用路径
+          VERSION=${VERSION#refs/tags/}                    # 移除 'refs/tags/' 前缀
+          VERSION=${VERSION#v}                             # 移除 'v' 前缀
+          echo "VERSION=$VERSION" >> $GITHUB_ENV           # 将版本号保存到环境变量
+
+      # 步骤5：构建 Docker 镜像并打多个标签
+      - name: Build Docker image with multiple tags
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}:latest \
+                       -t ghcr.io/${{ github.repository }}:${{ env.VERSION }} .
+
+      # 步骤6：推送两个标签到 GHCR
+      - name: Push both tags to GHCR
+        run: |
+          docker push ghcr.io/${{ github.repository }}:latest
+          docker push ghcr.io/${{ github.repository }}:${{ env.VERSION }}
+
+      # 步骤7：登录到 Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}       # 从 secrets 中获取 Docker Hub 用户名，在组织中已经设置
+          password: ${{ secrets.DOCKERHUB_TOKEN }}          # 从 secrets 中获取 Docker Hub 访问令牌，在组织中已经设置
+
+      # 步骤8：为 Docker Hub 重新标记镜像
+      - name: Tag images for Docker Hub
+        run: |
+          # 提取仓库名称用于 Docker Hub（移除所有者前缀）
+          DOCKER_REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          
+          # 标记最新版本
+          docker tag ghcr.io/${{ github.repository }}:latest docker.io/${{ secrets.DOCKERHUB_REPOSITORY }}/$DOCKER_REPO_NAME:latest
+          
+          # 标记版本化发布
+          docker tag ghcr.io/${{ github.repository }}:${{ env.VERSION }} docker.io/${{ secrets.DOCKERHUB_REPOSITORY }}/$DOCKER_REPO_NAME:${{ env.VERSION }}
+
+      # 步骤9：推送两个标签到 Docker Hub
+      - name: Push both tags to Docker Hub
+        run: |
+          # 提取仓库名称用于 Docker Hub
+          DOCKER_REPO_NAME=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          
+          # 推送最新版本
+          docker push docker.io/${{ secrets.DOCKERHUB_REPOSITORY }}/$DOCKER_REPO_NAME:latest
+          
+          # 推送版本化发布
+          docker push docker.io/${{ secrets.DOCKERHUB_REPOSITORY }}/$DOCKER_REPO_NAME:${{ env.VERSION }}

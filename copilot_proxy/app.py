@@ -9,6 +9,8 @@ import os
 import uvicorn
 from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
+
+from metrics.prometheus_metrics import get_metrics_data
 from models import CompletionRequest
 from utils.common import cache_clear
 from utils.errors import FauxPilotException
@@ -17,6 +19,7 @@ from utils.constant import FIM_INDICATOR
 from services.coder_completions import coder_completions
 from config.log_config import logger
 from starlette.middleware.base import BaseHTTPMiddleware
+from prometheus_client import CONTENT_TYPE_LATEST
 
 
 SCORE_INI_PATH = "./config/hide_score.yml"
@@ -35,7 +38,10 @@ async def fauxpilot_handler(request: Request, exc: FauxPilotException):
         status_code=400,
         content=exc.json()
     )
-
+    
+    # 注册 metrics 路由
+    app.include_router(metrics_router)
+    
 
 # Used to support copilot.vim
 @app.get("/copilot_internal/v2/token")
@@ -101,6 +107,24 @@ def ready():
             "success": False,
             "timestamp": datetime.now().isoformat()
         }
+    )
+
+
+@app.get("/metrics")
+async def get_metrics():
+    """
+    获取 Prometheus 指标数据
+
+    Returns:
+        Response: 包含 Prometheus 格式指标数据的 HTTP 响应
+    """
+    # 获取格式化的指标数据
+    metrics_data = get_metrics_data()
+
+    # 返回 Prometheus 格式的响应
+    return Response(
+        content=metrics_data,
+        media_type=CONTENT_TYPE_LATEST
     )
 
 
