@@ -38,9 +38,7 @@ async def fauxpilot_handler(request: Request, exc: FauxPilotException):
         status_code=400,
         content=exc.json()
     )
-    
-    # 注册 metrics 路由
-    app.include_router(metrics_router)
+
     
 
 # Used to support copilot.vim
