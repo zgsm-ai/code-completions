@@ -12,6 +12,10 @@ spec:
     metadata:
       labels:
         app: code-completion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
       - name: code-completion-container
@@ -108,6 +112,13 @@ kind: Service
 metadata:
   name: code-completion-svc
   namespace: "costrict" # 命名空间
+  labels:
+    app: code-completion
+    app.kubernetes.io/name: code-completion
+    app.kubernetes.io/component: service
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5000"
+    prometheus.io/path: "/metrics"
 spec:
   type: NodePort  #
   selector:
@@ -167,3 +178,4 @@ spec:
         value: 1 # 每次最多减少 1 个副本
         periodSeconds: 60
       selectPolicy: Min # 选择较小的策略
+

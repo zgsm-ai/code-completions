@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: code-completions
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: code-completions
+spec:
+  namespaceSelector:
+    matchNames:
+      - "costrict"
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: code-completion-server
+  endpoints:
+  - port: http # 这个名称对应 pushgateway Service.spec.ports.name 的值
+    path: /metrics
+    interval: 1m
+    honorLabels: true

@@ -14,6 +14,11 @@ spec:
     metadata:
       labels:
         app: {{ .Values.appName }}
+        app.kubernetes.io/name: {{ .Values.appName }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "{{ .Values.containerPort }}"
+        prometheus.io/path: "/metrics"
     spec:
       containers:
         - name: {{ .Values.containerName }}

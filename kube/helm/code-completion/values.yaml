@@ -111,6 +111,9 @@ env:
   # 是否关闭上下文语义检索功能（True 表示关闭）
   DISABLE_CONTEXT_SEMANTIC: "False"
 
+  # 
+  UVICORN_WORKERS: 2
+
 # Service 配置
 service:
   type: NodePort
